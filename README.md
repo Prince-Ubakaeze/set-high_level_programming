@@ -4,7 +4,7 @@ This repository contains projects and exercises focused on learning high-level p
 
 ## Directory Structure
 
-*   **[python-hello_world](./python-hello_world)**: Introduction to Python syntax, basic operations, and scripts execution.
+Introduction to Python syntax, basic operations, and scripts execution.
 
 ## Requirements
 
@@ -12,6 +12,4 @@ This repository contains projects and exercises focused on learning high-level p
 *   All files interpreted/compiled on Ubuntu 20.04 LTS or 22.04 LTS using `python3` (version 3.8.x or newer)
 *   All script files must be executable and end with a new line
 
-## Author
 
-*   **Prince** - [GitHub Profile](https://github.com)
