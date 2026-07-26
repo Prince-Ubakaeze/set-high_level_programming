@@ -183,6 +183,4 @@ Expected limits:
 - `19-copy_list.py`: maximum 3 lines
 - `100-magic_string.py`: maximum 4 lines
 
-## Author
 
-Prince Chibuike Ubakaeze
