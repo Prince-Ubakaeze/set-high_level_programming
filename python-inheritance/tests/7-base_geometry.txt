@@ -1,0 +1,51 @@
+The ``BaseGeometry`` class
+==========================
+
+Import and instantiate the class:
+
+    >>> BaseGeometry = __import__('7-base_geometry').BaseGeometry
+    >>> geometry = BaseGeometry()
+
+The area method is intentionally not implemented:
+
+    >>> geometry.area()
+    Traceback (most recent call last):
+    ...
+    Exception: area() is not implemented
+
+Positive integers are accepted:
+
+    >>> geometry.integer_validator("width", 5)
+    >>> geometry.integer_validator("height", 1)
+
+Strings are rejected:
+
+    >>> geometry.integer_validator("width", "5")
+    Traceback (most recent call last):
+    ...
+    TypeError: width must be an integer
+
+Floats are rejected:
+
+    >>> geometry.integer_validator("height", 4.5)
+    Traceback (most recent call last):
+    ...
+    TypeError: height must be an integer
+
+Boolean values are rejected even though bool inherits from int:
+
+    >>> geometry.integer_validator("height", True)
+    Traceback (most recent call last):
+    ...
+    TypeError: height must be an integer
+
+Zero and negative integers are rejected:
+
+    >>> geometry.integer_validator("age", 0)
+    Traceback (most recent call last):
+    ...
+    ValueError: age must be greater than 0
+    >>> geometry.integer_validator("distance", -4)
+    Traceback (most recent call last):
+    ...
+    ValueError: distance must be greater than 0
