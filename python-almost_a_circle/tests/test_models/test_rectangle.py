@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Unittests for models/rectangle.py."""
 import io
+import os
 import sys
 import unittest
 from models.base import Base
@@ -369,6 +370,183 @@ class TestRectangleToDictionary(unittest.TestCase):
         r2 = Rectangle(1, 1)
         r2.update(**r1.to_dictionary())
         self.assertIsNot(r1, r2)
+
+
+class TestRectangleFiles(unittest.TestCase):
+    """Test the Base file methods as used by Rectangle."""
+
+    def tearDown(self):
+        """Remove any file created by a test."""
+        for name in ("Rectangle.json", "Rectangle.csv"):
+            try:
+                os.remove(name)
+            except OSError:
+                pass
+
+    def test_save_to_file_none(self):
+        """Rectangle.save_to_file(None) writes an empty list."""
+        Rectangle.save_to_file(None)
+        with open("Rectangle.json", "r") as f:
+            self.assertEqual(f.read(), "[]")
+
+    def test_save_to_file_empty_list(self):
+        """Rectangle.save_to_file([]) writes an empty list."""
+        Rectangle.save_to_file([])
+        with open("Rectangle.json", "r") as f:
+            self.assertEqual(f.read(), "[]")
+
+    def test_save_to_file_one_rectangle(self):
+        """One rectangle is written as one JSON object."""
+        Rectangle.save_to_file([Rectangle(10, 7, 2, 8, 1)])
+        with open("Rectangle.json", "r") as f:
+            self.assertEqual(
+                Rectangle.from_json_string(f.read()),
+                [{"id": 1, "width": 10, "height": 7, "x": 2, "y": 8}])
+
+    def test_save_to_file_two_rectangles(self):
+        """Two rectangles are written as two JSON objects."""
+        Rectangle.save_to_file([Rectangle(10, 7), Rectangle(2, 4)])
+        with open("Rectangle.json", "r") as f:
+            self.assertEqual(len(Rectangle.from_json_string(f.read())), 2)
+
+    def test_save_to_file_overwrites(self):
+        """Saving twice overwrites the file."""
+        Rectangle.save_to_file([Rectangle(10, 7), Rectangle(2, 4)])
+        Rectangle.save_to_file([Rectangle(1, 1)])
+        with open("Rectangle.json", "r") as f:
+            self.assertEqual(len(Rectangle.from_json_string(f.read())), 1)
+
+    def test_save_to_file_creates_the_file(self):
+        """The file is named after the class."""
+        Rectangle.save_to_file([Rectangle(1, 1)])
+        self.assertTrue(os.path.exists("Rectangle.json"))
+
+    def test_load_from_file_missing(self):
+        """A missing file gives an empty list."""
+        self.assertEqual(Rectangle.load_from_file(), [])
+
+    def test_load_from_file_after_none(self):
+        """Saving None then loading gives an empty list."""
+        Rectangle.save_to_file(None)
+        self.assertEqual(Rectangle.load_from_file(), [])
+
+    def test_load_from_file_type(self):
+        """load_from_file returns a list."""
+        Rectangle.save_to_file([Rectangle(10, 7)])
+        self.assertIs(type(Rectangle.load_from_file()), list)
+
+    def test_load_from_file_instance_type(self):
+        """Loaded objects are Rectangles."""
+        Rectangle.save_to_file([Rectangle(10, 7)])
+        self.assertIs(type(Rectangle.load_from_file()[0]), Rectangle)
+
+    def test_load_from_file_values(self):
+        """Rectangles survive a save and load cycle."""
+        r1 = Rectangle(10, 7, 2, 8)
+        r2 = Rectangle(2, 4)
+        Rectangle.save_to_file([r1, r2])
+        loaded = Rectangle.load_from_file()
+        self.assertEqual([str(r1), str(r2)], [str(o) for o in loaded])
+
+    def test_load_from_file_new_objects(self):
+        """Loading builds new objects."""
+        r1 = Rectangle(10, 7)
+        Rectangle.save_to_file([r1])
+        self.assertIsNot(Rectangle.load_from_file()[0], r1)
+
+    def test_save_to_file_csv_none(self):
+        """Rectangle.save_to_file_csv(None) writes an empty file."""
+        Rectangle.save_to_file_csv(None)
+        with open("Rectangle.csv", "r") as f:
+            self.assertEqual(f.read(), "")
+
+    def test_save_to_file_csv_empty_list(self):
+        """Rectangle.save_to_file_csv([]) writes an empty file."""
+        Rectangle.save_to_file_csv([])
+        with open("Rectangle.csv", "r") as f:
+            self.assertEqual(f.read(), "")
+
+    def test_save_to_file_csv_format(self):
+        """A row is id,width,height,x,y."""
+        Rectangle.save_to_file_csv([Rectangle(10, 7, 2, 8, 1)])
+        with open("Rectangle.csv", "r") as f:
+            self.assertEqual(f.read().strip(), "1,10,7,2,8")
+
+    def test_save_to_file_csv_overwrites(self):
+        """Saving twice overwrites the file."""
+        Rectangle.save_to_file_csv([Rectangle(10, 7), Rectangle(2, 4)])
+        Rectangle.save_to_file_csv([Rectangle(1, 1, 0, 0, 9)])
+        with open("Rectangle.csv", "r") as f:
+            self.assertEqual(f.read().strip(), "9,1,1,0,0")
+
+    def test_load_from_file_csv_missing(self):
+        """A missing CSV file gives an empty list."""
+        self.assertEqual(Rectangle.load_from_file_csv(), [])
+
+    def test_load_from_file_csv_type(self):
+        """Loaded CSV objects are Rectangles."""
+        Rectangle.save_to_file_csv([Rectangle(10, 7)])
+        self.assertIs(type(Rectangle.load_from_file_csv()[0]), Rectangle)
+
+    def test_load_from_file_csv_values(self):
+        """Rectangles survive a CSV round trip."""
+        r1 = Rectangle(10, 7, 2, 8)
+        r2 = Rectangle(2, 4)
+        Rectangle.save_to_file_csv([r1, r2])
+        loaded = Rectangle.load_from_file_csv()
+        self.assertEqual([str(r1), str(r2)], [str(o) for o in loaded])
+
+
+class TestRectangleJsonAndCreate(unittest.TestCase):
+    """Test the Base JSON helpers and create as used by Rectangle."""
+
+    def test_to_json_string_none(self):
+        """None gives an empty list string."""
+        self.assertEqual(Rectangle.to_json_string(None), "[]")
+
+    def test_to_json_string_empty_list(self):
+        """An empty list gives an empty list string."""
+        self.assertEqual(Rectangle.to_json_string([]), "[]")
+
+    def test_to_json_string_type(self):
+        """to_json_string returns a string."""
+        r = Rectangle(10, 7, 2, 8, 1)
+        self.assertIs(type(Rectangle.to_json_string([r.to_dictionary()])), str)
+
+    def test_to_json_string_one_rectangle(self):
+        """A rectangle dictionary is serialized."""
+        r = Rectangle(10, 7, 2, 8, 1)
+        result = Rectangle.to_json_string([r.to_dictionary()])
+        self.assertEqual(Rectangle.from_json_string(result),
+                         [r.to_dictionary()])
+
+    def test_from_json_string_none(self):
+        """None gives an empty list."""
+        self.assertEqual(Rectangle.from_json_string(None), [])
+
+    def test_from_json_string_empty(self):
+        """An empty string gives an empty list."""
+        self.assertEqual(Rectangle.from_json_string(""), [])
+
+    def test_from_json_string_type(self):
+        """from_json_string returns a list."""
+        self.assertIs(type(Rectangle.from_json_string('[{"id": 1}]')), list)
+
+    def test_create_values(self):
+        """create rebuilds a rectangle from its dictionary."""
+        r1 = Rectangle(3, 5, 1, 0, 7)
+        r2 = Rectangle.create(**r1.to_dictionary())
+        self.assertEqual(str(r1), str(r2))
+
+    def test_create_type(self):
+        """create returns a Rectangle."""
+        self.assertIs(type(Rectangle.create(**{"id": 1, "width": 2,
+                                               "height": 3})), Rectangle)
+
+    def test_create_is_a_new_object(self):
+        """create returns a different object."""
+        r1 = Rectangle(3, 5, 1)
+        self.assertIsNot(Rectangle.create(**r1.to_dictionary()), r1)
 
 
 if __name__ == "__main__":

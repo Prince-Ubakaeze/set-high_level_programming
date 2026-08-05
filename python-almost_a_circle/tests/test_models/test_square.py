@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Unittests for models/square.py."""
 import io
+import os
 import sys
 import unittest
 from models.base import Base
@@ -287,6 +288,182 @@ class TestSquareToDictionary(unittest.TestCase):
         s2 = Square(1, 1)
         s2.update(**s1.to_dictionary())
         self.assertIsNot(s1, s2)
+
+
+class TestSquareFiles(unittest.TestCase):
+    """Test the Base file methods as used by Square."""
+
+    def tearDown(self):
+        """Remove any file created by a test."""
+        for name in ("Square.json", "Square.csv"):
+            try:
+                os.remove(name)
+            except OSError:
+                pass
+
+    def test_save_to_file_none(self):
+        """Square.save_to_file(None) writes an empty list."""
+        Square.save_to_file(None)
+        with open("Square.json", "r") as f:
+            self.assertEqual(f.read(), "[]")
+
+    def test_save_to_file_empty_list(self):
+        """Square.save_to_file([]) writes an empty list."""
+        Square.save_to_file([])
+        with open("Square.json", "r") as f:
+            self.assertEqual(f.read(), "[]")
+
+    def test_save_to_file_one_square(self):
+        """One square is written as one JSON object."""
+        Square.save_to_file([Square(10, 2, 8, 1)])
+        with open("Square.json", "r") as f:
+            self.assertEqual(
+                Square.from_json_string(f.read()),
+                [{"id": 1, "size": 10, "x": 2, "y": 8}])
+
+    def test_save_to_file_two_squares(self):
+        """Two squares are written as two JSON objects."""
+        Square.save_to_file([Square(5), Square(7, 9, 1)])
+        with open("Square.json", "r") as f:
+            self.assertEqual(len(Square.from_json_string(f.read())), 2)
+
+    def test_save_to_file_overwrites(self):
+        """Saving twice overwrites the file."""
+        Square.save_to_file([Square(5), Square(7, 9, 1)])
+        Square.save_to_file([Square(1)])
+        with open("Square.json", "r") as f:
+            self.assertEqual(len(Square.from_json_string(f.read())), 1)
+
+    def test_save_to_file_creates_the_file(self):
+        """The file is named after the class."""
+        Square.save_to_file([Square(1)])
+        self.assertTrue(os.path.exists("Square.json"))
+
+    def test_load_from_file_missing(self):
+        """A missing file gives an empty list."""
+        self.assertEqual(Square.load_from_file(), [])
+
+    def test_load_from_file_after_none(self):
+        """Saving None then loading gives an empty list."""
+        Square.save_to_file(None)
+        self.assertEqual(Square.load_from_file(), [])
+
+    def test_load_from_file_type(self):
+        """load_from_file returns a list."""
+        Square.save_to_file([Square(5)])
+        self.assertIs(type(Square.load_from_file()), list)
+
+    def test_load_from_file_instance_type(self):
+        """Loaded objects are Squares."""
+        Square.save_to_file([Square(5)])
+        self.assertIs(type(Square.load_from_file()[0]), Square)
+
+    def test_load_from_file_values(self):
+        """Squares survive a save and load cycle."""
+        r1 = Square(10, 7, 2, 8)
+        r2 = Square(7, 9, 1)
+        Square.save_to_file([r1, r2])
+        loaded = Square.load_from_file()
+        self.assertEqual([str(r1), str(r2)], [str(o) for o in loaded])
+
+    def test_load_from_file_new_objects(self):
+        """Loading builds new objects."""
+        r1 = Square(5)
+        Square.save_to_file([r1])
+        self.assertIsNot(Square.load_from_file()[0], r1)
+
+    def test_save_to_file_csv_none(self):
+        """Square.save_to_file_csv(None) writes an empty file."""
+        Square.save_to_file_csv(None)
+        with open("Square.csv", "r") as f:
+            self.assertEqual(f.read(), "")
+
+    def test_save_to_file_csv_empty_list(self):
+        """Square.save_to_file_csv([]) writes an empty file."""
+        Square.save_to_file_csv([])
+        with open("Square.csv", "r") as f:
+            self.assertEqual(f.read(), "")
+
+    def test_save_to_file_csv_format(self):
+        """A row is id,size,x,y."""
+        Square.save_to_file_csv([Square(10, 2, 8, 1)])
+        with open("Square.csv", "r") as f:
+            self.assertEqual(f.read().strip(), "1,10,2,8")
+
+    def test_save_to_file_csv_overwrites(self):
+        """Saving twice overwrites the file."""
+        Square.save_to_file_csv([Square(5), Square(7, 9, 1)])
+        Square.save_to_file_csv([Square(1, 0, 0, 9)])
+        with open("Square.csv", "r") as f:
+            self.assertEqual(f.read().strip(), "9,1,0,0")
+
+    def test_load_from_file_csv_missing(self):
+        """A missing CSV file gives an empty list."""
+        self.assertEqual(Square.load_from_file_csv(), [])
+
+    def test_load_from_file_csv_type(self):
+        """Loaded CSV objects are Squares."""
+        Square.save_to_file_csv([Square(5)])
+        self.assertIs(type(Square.load_from_file_csv()[0]), Square)
+
+    def test_load_from_file_csv_values(self):
+        """Squares survive a CSV round trip."""
+        r1 = Square(10, 7, 2, 8)
+        r2 = Square(7, 9, 1)
+        Square.save_to_file_csv([r1, r2])
+        loaded = Square.load_from_file_csv()
+        self.assertEqual([str(r1), str(r2)], [str(o) for o in loaded])
+
+
+class TestSquareJsonAndCreate(unittest.TestCase):
+    """Test the Base JSON helpers and create as used by Square."""
+
+    def test_to_json_string_none(self):
+        """None gives an empty list string."""
+        self.assertEqual(Square.to_json_string(None), "[]")
+
+    def test_to_json_string_empty_list(self):
+        """An empty list gives an empty list string."""
+        self.assertEqual(Square.to_json_string([]), "[]")
+
+    def test_to_json_string_type(self):
+        """to_json_string returns a string."""
+        r = Square(10, 2, 8, 1)
+        self.assertIs(type(Square.to_json_string([r.to_dictionary()])), str)
+
+    def test_to_json_string_one_square(self):
+        """A square dictionary is serialized."""
+        r = Square(10, 2, 8, 1)
+        result = Square.to_json_string([r.to_dictionary()])
+        self.assertEqual(Square.from_json_string(result),
+                         [r.to_dictionary()])
+
+    def test_from_json_string_none(self):
+        """None gives an empty list."""
+        self.assertEqual(Square.from_json_string(None), [])
+
+    def test_from_json_string_empty(self):
+        """An empty string gives an empty list."""
+        self.assertEqual(Square.from_json_string(""), [])
+
+    def test_from_json_string_type(self):
+        """from_json_string returns a list."""
+        self.assertIs(type(Square.from_json_string('[{"id": 1}]')), list)
+
+    def test_create_values(self):
+        """create rebuilds a square from its dictionary."""
+        r1 = Square(3, 5, 1, 7)
+        r2 = Square.create(**r1.to_dictionary())
+        self.assertEqual(str(r1), str(r2))
+
+    def test_create_type(self):
+        """create returns a Square."""
+        self.assertIs(type(Square.create(**{"id": 1, "size": 2})), Square)
+
+    def test_create_is_a_new_object(self):
+        """create returns a different object."""
+        r1 = Square(3, 5, 1)
+        self.assertIsNot(Square.create(**r1.to_dictionary()), r1)
 
 
 if __name__ == "__main__":
