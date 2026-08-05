@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """Unittests for models/base.py."""
+import inspect
 import os
 import unittest
 from models.base import Base
@@ -143,6 +144,45 @@ class TestBaseCreate(unittest.TestCase):
     def test_create_type(self):
         """create returns an instance of the calling class."""
         self.assertIs(type(Square.create(**{"id": 1, "size": 3})), Square)
+
+
+class TestBaseDraw(unittest.TestCase):
+    """Test the draw static method.
+
+    The method opens a turtle window, so it is inspected rather than
+    called: running it needs a display and would block on a click.
+    """
+
+    def test_draw_exists(self):
+        """Base has a draw attribute."""
+        self.assertTrue(hasattr(Base, "draw"))
+
+    def test_draw_is_callable(self):
+        """draw can be called."""
+        self.assertTrue(callable(Base.draw))
+
+    def test_draw_is_static(self):
+        """draw is a static method."""
+        self.assertIsInstance(inspect.getattr_static(Base, "draw"),
+                              staticmethod)
+
+    def test_draw_signature(self):
+        """draw takes a list of rectangles and a list of squares."""
+        parameters = inspect.signature(Base.draw).parameters
+        self.assertEqual(list(parameters), ["list_rectangles",
+                                            "list_squares"])
+
+    def test_draw_has_a_docstring(self):
+        """draw is documented."""
+        self.assertTrue(len(Base.draw.__doc__) > 1)
+
+    def test_draw_inherited_by_rectangle(self):
+        """Rectangle inherits draw."""
+        self.assertTrue(hasattr(Rectangle, "draw"))
+
+    def test_draw_inherited_by_square(self):
+        """Square inherits draw."""
+        self.assertTrue(hasattr(Square, "draw"))
 
 
 class TestBaseFiles(unittest.TestCase):

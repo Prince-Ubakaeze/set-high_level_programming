@@ -85,6 +85,42 @@ class Base:
                 dictionary = obj.to_dictionary()
                 writer.writerow([dictionary[field] for field in fields])
 
+    @staticmethod
+    def draw(list_rectangles, list_squares):
+        """Draw every given rectangle and square in a turtle window.
+
+        Args:
+            list_rectangles (list): the Rectangle instances to draw.
+            list_squares (list): the Square instances to draw.
+        """
+        import turtle
+
+        pen = turtle.Turtle()
+        pen.screen.bgcolor("#0b1021")
+        pen.screen.title("Almost a circle")
+        pen.pensize(3)
+        pen.speed(0)
+        pen.hideturtle()
+
+        def outline(shape, colour):
+            """Trace one shape at its own offset in the given colour."""
+            pen.color(colour)
+            pen.penup()
+            pen.goto(shape.x, shape.y)
+            pen.pendown()
+            for _ in range(2):
+                pen.forward(shape.width)
+                pen.left(90)
+                pen.forward(shape.height)
+                pen.left(90)
+
+        for rectangle in list_rectangles:
+            outline(rectangle, "#f4a259")
+        for square in list_squares:
+            outline(square, "#5bc0be")
+
+        pen.screen.exitonclick()
+
     @classmethod
     def load_from_file_csv(cls):
         """Return a list of instances loaded from <Class name>.csv."""

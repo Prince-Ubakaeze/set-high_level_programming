@@ -1,11 +1,11 @@
-
 #!/usr/bin/env bash
 # ---------------------------------------------------------------
-# setup_almost_a_circle.sh  (v2)
+# setup_almost_a_circle.sh  (v3)
 #
 # v2: every Base method is now tested against BOTH Rectangle and
 #     Square, in their own test files, for the checker's per-class
 #     "test exists" checks.
+# v3: adds Base.draw (turtle) and 101-main.py.
 #
 # Builds the whole python-almost_a_circle project: the models package,
 # the unittest suite, and the package __init__.py files. Removes any
@@ -24,7 +24,7 @@ cd "$TARGET"
  
 echo "Target directory: $(pwd)"
  
-ALL_FILES="README.md models/__init__.py models/base.py models/rectangle.py models/square.py tests/__init__.py tests/test_models/__init__.py tests/test_models/test_base.py tests/test_models/test_rectangle.py tests/test_models/test_square.py"
+ALL_FILES="README.md 101-main.py models/__init__.py models/base.py models/rectangle.py models/square.py tests/__init__.py tests/test_models/__init__.py tests/test_models/test_base.py tests/test_models/test_rectangle.py tests/test_models/test_square.py"
  
 # --- 1. Remove the previous version ------------------------------
 echo "Removing old files..."
@@ -33,6 +33,7 @@ for f in $ALL_FILES; do
 done
 rm -f Rectangle.json Square.json Base.json Rectangle.csv Square.csv
 find . -name __pycache__ -type d -exec rm -rf {} + 2> /dev/null || true
+ 
  
  
 # --- 2. Write the files ------------------------------------------
@@ -65,6 +66,22 @@ python3 -m unittest discover tests
 | `tests/test_models/test_base.py` | id handling, JSON strings, files, CSV, `create` |
 | `tests/test_models/test_rectangle.py` | instantiation, validation, area, display, str, update, dictionary |
 | `tests/test_models/test_square.py` | inheritance, size, validation, display, str, update, dictionary |
+SETEOF
+ 
+cat > 101-main.py << 'SETEOF'
+#!/usr/bin/python3
+""" 101-main """
+from models.base import Base
+from models.rectangle import Rectangle
+from models.square import Square
+ 
+if __name__ == "__main__":
+ 
+    list_rectangles = [Rectangle(100, 40), Rectangle(90, 110, 30, 10),
+                       Rectangle(20, 25, 110, 80)]
+    list_squares = [Square(35), Square(15, 70, 50), Square(80, 30, 70)]
+ 
+    Base.draw(list_rectangles, list_squares)
 SETEOF
  
 > models/__init__.py
@@ -156,6 +173,42 @@ class Base:
             for obj in list_objs:
                 dictionary = obj.to_dictionary()
                 writer.writerow([dictionary[field] for field in fields])
+ 
+    @staticmethod
+    def draw(list_rectangles, list_squares):
+        """Draw every given rectangle and square in a turtle window.
+ 
+        Args:
+            list_rectangles (list): the Rectangle instances to draw.
+            list_squares (list): the Square instances to draw.
+        """
+        import turtle
+ 
+        pen = turtle.Turtle()
+        pen.screen.bgcolor("#0b1021")
+        pen.screen.title("Almost a circle")
+        pen.pensize(3)
+        pen.speed(0)
+        pen.hideturtle()
+ 
+        def outline(shape, colour):
+            """Trace one shape at its own offset in the given colour."""
+            pen.color(colour)
+            pen.penup()
+            pen.goto(shape.x, shape.y)
+            pen.pendown()
+            for _ in range(2):
+                pen.forward(shape.width)
+                pen.left(90)
+                pen.forward(shape.height)
+                pen.left(90)
+ 
+        for rectangle in list_rectangles:
+            outline(rectangle, "#f4a259")
+        for square in list_squares:
+            outline(square, "#5bc0be")
+ 
+        pen.screen.exitonclick()
  
     @classmethod
     def load_from_file_csv(cls):
@@ -355,6 +408,7 @@ SETEOF
 cat > tests/test_models/test_base.py << 'SETEOF'
 #!/usr/bin/python3
 """Unittests for models/base.py."""
+import inspect
 import os
 import unittest
 from models.base import Base
@@ -498,6 +552,45 @@ class TestBaseCreate(unittest.TestCase):
     def test_create_type(self):
         """create returns an instance of the calling class."""
         self.assertIs(type(Square.create(**{"id": 1, "size": 3})), Square)
+ 
+ 
+class TestBaseDraw(unittest.TestCase):
+    """Test the draw static method.
+ 
+    The method opens a turtle window, so it is inspected rather than
+    called: running it needs a display and would block on a click.
+    """
+ 
+    def test_draw_exists(self):
+        """Base has a draw attribute."""
+        self.assertTrue(hasattr(Base, "draw"))
+ 
+    def test_draw_is_callable(self):
+        """draw can be called."""
+        self.assertTrue(callable(Base.draw))
+ 
+    def test_draw_is_static(self):
+        """draw is a static method."""
+        self.assertIsInstance(inspect.getattr_static(Base, "draw"),
+                              staticmethod)
+ 
+    def test_draw_signature(self):
+        """draw takes a list of rectangles and a list of squares."""
+        parameters = inspect.signature(Base.draw).parameters
+        self.assertEqual(list(parameters), ["list_rectangles",
+                                            "list_squares"])
+ 
+    def test_draw_has_a_docstring(self):
+        """draw is documented."""
+        self.assertTrue(len(Base.draw.__doc__) > 1)
+ 
+    def test_draw_inherited_by_rectangle(self):
+        """Rectangle inherits draw."""
+        self.assertTrue(hasattr(Rectangle, "draw"))
+ 
+    def test_draw_inherited_by_square(self):
+        """Square inherits draw."""
+        self.assertTrue(hasattr(Square, "draw"))
  
  
 class TestBaseFiles(unittest.TestCase):
@@ -1658,7 +1751,7 @@ for f in $ALL_FILES; do
 done
  
 # all files must be executable for this project
-chmod +x models/*.py tests/*.py tests/test_models/*.py
+chmod +x 101-main.py models/*.py tests/*.py tests/test_models/*.py
  
 echo
 echo "Files created:"
@@ -1674,7 +1767,8 @@ fi
 echo
 echo "--- pycodestyle ---"
 if command -v pycodestyle > /dev/null 2>&1; then
-    pycodestyle models/*.py tests/*.py tests/test_models/*.py &&
+    pycodestyle 101-main.py models/*.py tests/*.py \
+        tests/test_models/*.py &&
         echo "PEP8: OK (0 errors)"
 else
     echo "pycodestyle not installed, skipping (pip3 install pycodestyle)"
