@@ -1,0 +1,48 @@
+The ``5-text_indentation`` module
+=================================
+
+Using ``text_indentation``
+--------------------------
+
+Import the function:
+
+    >>> text_indentation = __import__('5-text_indentation').text_indentation
+
+Two new lines are printed after each . ? and : character:
+
+    >>> text_indentation("Hello. How are you? Fine: thanks")
+    Hello.
+    <BLANKLINE>
+    How are you?
+    <BLANKLINE>
+    Fine:
+    <BLANKLINE>
+    thanks
+
+Spaces around each printed line are removed:
+
+    >>> text_indentation("   Hello.   Bye.   ")
+    Hello.
+    <BLANKLINE>
+    Bye.
+    <BLANKLINE>
+
+An empty string prints nothing:
+
+    >>> text_indentation("")
+
+A text that is not a string:
+
+    >>> text_indentation(12)
+    Traceback (most recent call last):
+    TypeError: text must be a string
+
+    >>> text_indentation(["Hello"])
+    Traceback (most recent call last):
+    TypeError: text must be a string
+
+Missing arguments:
+
+    >>> text_indentation()
+    Traceback (most recent call last):
+    TypeError: text_indentation() missing 1 required positional argument: 'text'

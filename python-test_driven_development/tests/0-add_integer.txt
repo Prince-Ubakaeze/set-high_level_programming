@@ -1,0 +1,50 @@
+The ``0-add_integer`` module
+============================
+
+Using ``add_integer``
+---------------------
+
+Import the function:
+
+    >>> add_integer = __import__('0-add_integer').add_integer
+
+Adding two integers:
+
+    >>> add_integer(1, 2)
+    3
+
+    >>> add_integer(100, -2)
+    98
+
+Using the default value of ``b``:
+
+    >>> add_integer(2)
+    100
+
+Floats are casted to integers first:
+
+    >>> add_integer(100.3, -2)
+    98
+
+    >>> add_integer(-1.5, -1.5)
+    -2
+
+Non numbers raise a TypeError:
+
+    >>> add_integer(4, "School")
+    Traceback (most recent call last):
+    TypeError: b must be an integer
+
+    >>> add_integer(None)
+    Traceback (most recent call last):
+    TypeError: a must be an integer
+
+    >>> add_integer([1, 2], 3)
+    Traceback (most recent call last):
+    TypeError: a must be an integer
+
+Missing both arguments:
+
+    >>> add_integer()
+    Traceback (most recent call last):
+    TypeError: add_integer() missing 1 required positional argument: 'a'
