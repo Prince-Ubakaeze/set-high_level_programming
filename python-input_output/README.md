@@ -1,7 +1,7 @@
 # Python - Input/Output
- 
+
 Project files for `python-input_output` in the `set-high_level_programming` repository.
- 
+
 | File | Task |
 | --- | --- |
 | `0-read_file.py` | Read a UTF-8 text file and print it to stdout |

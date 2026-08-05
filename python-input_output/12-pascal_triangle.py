@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """Defines a function that builds Pascal's triangle."""
- 
- 
+
+
 def pascal_triangle(n):
     """Return a list of lists of integers representing Pascal's triangle."""
     triangle = []
@@ -16,4 +16,3 @@ def pascal_triangle(n):
             row.append(1)
         triangle.append(row)
     return triangle
-
