@@ -36,6 +36,22 @@ A matrix that is not a list of lists of numbers:
     Traceback (most recent call last):
     TypeError: matrix must be a matrix (list of lists) of integers/floats
 
+An empty matrix or an empty row:
+
+    >>> matrix_divided([], 2)
+    Traceback (most recent call last):
+    TypeError: matrix must be a matrix (list of lists) of integers/floats
+
+    >>> matrix_divided([[]], 2)
+    Traceback (most recent call last):
+    TypeError: matrix must be a matrix (list of lists) of integers/floats
+
+A row that is not a list:
+
+    >>> matrix_divided([[1, 2], "row"], 2)
+    Traceback (most recent call last):
+    TypeError: matrix must be a matrix (list of lists) of integers/floats
+
 Rows of different sizes:
 
     >>> matrix_divided([[1, 2], [3, 4, 5]], 2)
@@ -47,6 +63,17 @@ A div that is not a number:
     >>> matrix_divided([[1, 2]], "2")
     Traceback (most recent call last):
     TypeError: div must be a number
+
+A div of None:
+
+    >>> matrix_divided([[1, 2]], None)
+    Traceback (most recent call last):
+    TypeError: div must be a number
+
+Dividing by infinity gives zeros:
+
+    >>> matrix_divided([[1, 2]], float('inf'))
+    [[0.0, 0.0]]
 
 Dividing by zero:
 

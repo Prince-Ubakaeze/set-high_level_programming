@@ -4,6 +4,10 @@ The ``101-lazy_matrix_mul`` module
 Using ``lazy_matrix_mul``
 -------------------------
 
+All validation is done by NumPy, so the messages below are NumPy's own,
+not the ones used in ``100-matrix_mul``. They are the messages produced
+by numpy==1.15.0, the version this project targets.
+
 Import the function:
 
     >>> lazy_matrix_mul = __import__('101-lazy_matrix_mul').lazy_matrix_mul
@@ -24,82 +28,69 @@ Floats are accepted:
     >>> lazy_matrix_mul([[1.5, 2]], [[2], [1]]).tolist()
     [[5.0]]
 
-Unlike ``100-matrix_mul``, every error below is raised by NumPy, so the
-exception type and message depend on the installed NumPy version. The
-tests therefore only check that an exception is raised.
-
 An argument that is not a list:
 
     >>> try:
     ...     lazy_matrix_mul("ALX", [[5, 6], [7, 8]])
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    Scalar operands are not allowed, use '*' instead
 
     >>> try:
     ...     lazy_matrix_mul([[5, 6], [7, 8]], "ALX")
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    Scalar operands are not allowed, use '*' instead
 
 An empty argument:
 
     >>> try:
     ...     lazy_matrix_mul([[]], [[5, 6], [7, 8]])
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    shapes (1,0) and (2,2) not aligned: 0 (dim 1) != 2 (dim 0)
 
     >>> try:
     ...     lazy_matrix_mul([[5, 6], [7, 8]], [[]])
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    shapes (2,2) and (1,0) not aligned: 2 (dim 1) != 1 (dim 0)
 
 An element that is not a number:
 
     >>> try:
     ...     lazy_matrix_mul([[5, "6"], [7, 8]], [[5, 6], [7, 8]])
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    invalid data type for einsum
 
     >>> try:
     ...     lazy_matrix_mul([[5, 6], [7, 8]], [[5, "6"], [7, 8]])
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    invalid data type for einsum
 
 Rows of different sizes:
 
     >>> try:
     ...     lazy_matrix_mul([[5, 6, 10], [7, 8]], [[5, 6], [7, 8]])
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    setting an array element with a sequence.
 
     >>> try:
     ...     lazy_matrix_mul([[5, 6], [7, 8]], [[5, 6, 1], [7, 8]])
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    setting an array element with a sequence.
 
 Matrices that cannot be multiplied:
 
     >>> try:
     ...     lazy_matrix_mul([[1, 2, 3], [3, 4, 5]], [[1, 2], [3, 4]])
-    ...     print("no exception")
-    ... except Exception:
-    ...     print("exception raised")
-    exception raised
+    ... except Exception as e:
+    ...     print(e)
+    shapes (2,3) and (2,2) not aligned: 3 (dim 1) != 2 (dim 0)
 
 Missing one argument:
 
