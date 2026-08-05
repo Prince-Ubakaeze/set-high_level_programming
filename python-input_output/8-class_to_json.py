@@ -9,3 +9,4 @@ def class_to_json(obj):
         if isinstance(value, (list, dict, str, int, float, bool)):
             result[key] = value
     return result
+

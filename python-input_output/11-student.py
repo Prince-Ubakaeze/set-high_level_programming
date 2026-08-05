@@ -24,3 +24,4 @@ class Student:
         """Replace all attributes of the Student from the json dictionary."""
         for key, value in json.items():
             setattr(self, key, value)
+            
